@@ -1,0 +1,14 @@
+[Unit]
+Description=PD Bot
+After=multi-user.target
+
+[Service]
+User=sava
+Type=idle
+# Environment=DISPLAY=:0 # optional for selenium
+WorkingDirectory=/home/sava/pd_operator_bot
+ExecStart=/home/sava/pd_operator_bot/venv/bin/python /home/sava/pd_operator_bot/main.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
