@@ -3,8 +3,10 @@ import json
 import re
 import traceback
 
+from httpx import ReadTimeout
 from telegram import Update, Bot, User
 from telegram.constants import ParseMode, ChatMemberStatus
+from telegram.error import TimedOut, BadRequest, NetworkError
 from telegram.ext import ContextTypes
 
 import config
@@ -36,6 +38,36 @@ async def error_handler(update: object, context: ContextTypes.DEFAULT_TYPE) -> N
     )
 
     message = message if len(message) <= 4000 else html.escape(message[len(message) - 3997: len(message)] + "...")
+
+    if type(context.error) is AttributeError and "'NoneType' object has no attribute 'reply_text'" in str(
+            context.error
+    ):
+        app_log.error(f"Штатная ошибка редактирования сообщения: ({context.error})" f"\n{traceback.format_exc()}")
+        return
+    if type(context.error) is TimedOut:
+        try:
+            app_log.error(
+                f"Штатная ошибка - таймаут от тг: ({context.error})" f"\n{traceback.format_exc()}",
+            )
+            return
+        except Exception as e:
+            app_log.error(f"Ошибка при отправке ошибки: {e}")
+
+    if type(context.error) is BadRequest:
+        if "Query is too old and response timeout expired or query id is invalid" in str(context.error):
+            app_log.error(
+                f"Штатная ошибка - таймаут от при inline нажатии: ({context.error})" f"\n{traceback.format_exc()}",
+            )
+            return
+
+    if type(context.error) is NetworkError or type(context.error) is ReadTimeout:
+        try:
+            app_log.error(
+                f"Штатная ошибка - временная потеря соединения ({context.error})" f"\n{traceback.format_exc()}",
+            )
+            return
+        except Exception as e:
+            app_log.error(f"Ошибка при отправке ошибки: {e}")
 
     # Finally, send the message
     for admin in ADMINS:
