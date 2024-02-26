@@ -1,13 +1,9 @@
-import traceback
-
 from telegram import Update
-from telegram.constants import ChatAction
 from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters, TypeHandler
 
 import config
 import db.func as db_func
 import tg.func as tg_func
-from log import app_log
 from parser.post import clean_input, determine_data_type, post_request_data
 from utils import get_msg
 
@@ -49,11 +45,6 @@ async def set_last_touch(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = tg_func.get_user_id(update)
     if user_id:
         if action_data:
-            try:
-                await context.bot.send_chat_action(chat_id=user_id, action=ChatAction.TYPING)
-            except Exception as e:
-                app_log.error(f"{e}, {traceback.format_exc()}")
-
             db_func.set_last_touch(user_id)
 
             if action_data:
