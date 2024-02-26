@@ -87,7 +87,7 @@ async def post_request_data(inn: str = None, regn: str = None):
 
     result_table = soup.find("table", {"id": "ResList1"})
 
-    not_found_resp = f"Записей не найдено: https://pd.rkn.gov.ru/operators-registry/operators-list/?inn={inn}"
+    not_found_resp = f"Записей не найдено, перепроверьте: https://pd.rkn.gov.ru/operators-registry/operators-list/"
 
     if result_table:
         d = convert_for_tg(result_table)
